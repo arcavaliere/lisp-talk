@@ -118,3 +118,16 @@
       (setq node (find-node (markov-node-second-prefix node) word nodes))
       (setq word (choose-random (markov-node-suffixes node))))))
 
+;; ------------------ Third Gen ------------------------
+
+(defun init-markov-nodes (words)
+  (let ((hash-table (make-hash-table :test #'equal)))
+    (dotimes (i (- (length words) 3))
+      (let* ((prefix-part-one (elt words i))
+             (prefix-part-two (elt words (+ i 1)))
+             (suffix (elt words (+ i 2)))
+             (prefix (make-prefix-word prefix-part-one prefix-part-two)))
+        (if (equal (nth-value 1 (gethash prefix hash-table)) nil)
+            (setf (gethash prefix hash-table) (make-markov-node :first-prefix prefix-part-one :second-prefix prefix-part-two :suffixes (list suffix)))
+            (push suffix (markov-node-suffixes (nth-value 0 (gethash prefix hash-table)))))))
+    hash-table))

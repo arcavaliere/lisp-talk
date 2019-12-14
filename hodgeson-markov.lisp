@@ -57,7 +57,7 @@
       (setq node (node-in-list (make-prefix-word (second (uiop:split-string (node-word node) :separator " ")) word) node-list))
       (setq word (nth (random (length (node-following-words node))) (node-following-words node))))))
 
-;; -----------------------------------------------------------------------------------------------------------
+;; ----- Second Generation ----------------------------------------------
 
 (defstruct markov-node
   first-prefix
@@ -131,3 +131,14 @@
             (setf (gethash prefix hash-table) (make-markov-node :first-prefix prefix-part-one :second-prefix prefix-part-two :suffixes (list suffix)))
             (push suffix (markov-node-suffixes (nth-value 0 (gethash prefix hash-table)))))))
     hash-table))
+
+
+(defun generate (table iterations)
+  (let* ((prefix-list (loop for key being the hash-keys of table collect key))
+         (node (gethash (choose-random prefix-list) table))
+         (word (choose-random (markov-node-suffixes node))))
+    (format t "~a ~a " (markov-node-first-prefix node) (markov-node-second-prefix node))
+    (dotimes (count iterations)
+      (format t "~a " word)
+      (setq node (gethash (format nil "~a ~a" (markov-node-second-prefix node) word) table))
+      (setq word (choose-random (markov-node-suffixes node))))))

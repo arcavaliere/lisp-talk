@@ -142,3 +142,38 @@
       (format t "~a " word)
       (setq node (gethash (format nil "~a ~a" (markov-node-second-prefix node) word) table))
       (setq word (choose-random (markov-node-suffixes node))))))
+
+
+;; ---------------- Fourth Generation ----------------------
+(defvar *book-path* "./pg10002.txt")
+(defvar *boats-of-the-glen-carrig* "./pg10542.txt")
+(defvar *file-contents* (remove "" (uiop:split-string (format nil "~{~^ ~a~^ ~}" (uiop:read-file-lines *book-path*)) :separator " ") :test #'equal))
+(defvar *boats-contents* (remove "" (uiop:split-string (format nil "~{~^ ~a~^ ~}" (uiop:read-file-lines *boats-of-the-glen-carrig*)) :separator " ") :test #'equal))
+
+(defun load-file-contents (file-path)
+  (remove "" (uiop:split-string
+              (format nil "~{~^ ~a~^ ~}"
+                      (uiop:read-file-lines file-path))
+              :separator " ")
+          :test #'equal))
+
+(defun init-markov-table (words table)
+  (let ((hash-table table))
+    (dotimes (i (- (length words) 3))
+      (let* ((prefix-part-one (elt words i))
+             (prefix-part-two (elt words (+ i 1)))
+             (suffix (elt words (+ i 2)))
+             (prefix (make-prefix-word prefix-part-one prefix-part-two)))
+        (if (equal (nth-value 1 (gethash prefix hash-table)) nil)
+            (setf (gethash prefix hash-table) (make-markov-node :first-prefix prefix-part-one :second-prefix prefix-part-two :suffixes (list suffix)))
+            (push suffix (markov-node-suffixes (nth-value 0 (gethash prefix hash-table)))))))
+    hash-table))
+
+
+(defun run-text-generation (file-paths iterations)
+  (let ((hash-table (make-hash-table :test #'equal)))
+    (loop :for file in file-paths
+          do (init-markov-table (load-file-contents file) hash-table))
+    (generate hash-table iterations)))
+
+

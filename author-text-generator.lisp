@@ -13,7 +13,6 @@
   (remove "" (uiop:split-string (format nil "~{~^ ~a~^ ~}" (uiop:read-file-lines file-path)) :separator " ") :test #'equal))
 
 (defun init-markov-table (words table)
-  ;; It's side-effecting! Run in fear!
   (let ((hash-table table))
     (dotimes (i (- (length words) 3))
       (let* ((prefix-part-one (elt words i))

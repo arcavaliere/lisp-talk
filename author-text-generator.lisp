@@ -25,6 +25,16 @@
             (push suffix (markov-node-suffixes (nth-value 0 (gethash prefix hash-table)))))))
     hash-table))
 
+(defun generate (table iterations)
+  (let* ((prefix-list (loop for key being the hash-keys of table collect key))
+         (node (gethash (choose-random prefix-list) table))
+         (word (choose-random (markov-node-suffixes node))))
+    (format t "~a ~a " (markov-node-first-prefix node) (markov-node-second-prefix node))
+    (dotimes (count iterations)
+      (format t "~a " word)
+      (setq node (gethash (format nil "~a ~a" (markov-node-second-prefix node) word) table))
+      (setq word (choose-random (markov-node-suffixes node))))))
+
 
 (defun run-text-generation (file-paths iterations)
   (let ((hash-table (make-hash-table :test #'equal)))
